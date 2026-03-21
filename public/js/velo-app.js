@@ -49,6 +49,12 @@ class VeloApp {
         // Share Link
         this.sharePassword = null;
 
+        // ==================== TEXT SHARING ====================
+        // Only active in-memory (no backend storage): receiver must connect while sharer stays on this page.
+        this.activeTextShare = null; // { token, text }
+        this.textShareTokenFromUrl = null; // parsed from ?t=... on the receiver
+        this.maxTextShareChars = 20000;
+
         this.initElements();
         this.bindEvents();
     }
@@ -226,7 +232,7 @@ class VeloApp {
         }
 
         const conn = this.peer.connect(peerId, {
-            metadata: { username: this.myUsername }
+            metadata: { username: this.myUsername, textShareToken: this.textShareTokenFromUrl }
         });
 
         this.setupConnection(conn);
@@ -251,6 +257,32 @@ class VeloApp {
                 username: this.myUsername
             });
 
+            // If this connection was initiated from a text-share link, deliver the active text.
+            const receiverToken = conn.metadata?.textShareToken || null;
+            if (this.activeTextShare) {
+                const { token: activeToken, text, deliveredToPeers } = this.activeTextShare;
+                const delivered = deliveredToPeers || new Set();
+
+                // If the receiver is using a tokenized link, only deliver when token matches.
+                if (receiverToken && receiverToken !== activeToken) {
+                    conn.send({
+                        type: 'text-share-miss',
+                        token: receiverToken
+                    });
+                } else {
+                    // Deliver once per peer per active share.
+                    if (!delivered.has(conn.peer)) {
+                        conn.send({
+                            type: 'text-share',
+                            token: activeToken,
+                            text
+                        });
+                        delivered.add(conn.peer);
+                        this.activeTextShare.deliveredToPeers = delivered;
+                    }
+                }
+            }
+
             // Process queue
             this.processTransferQueue();
         });
@@ -262,6 +294,10 @@ class VeloApp {
         conn.on('close', () => {
             const peerInfo = this.connections.get(conn.peer);
             this.connections.delete(conn.peer);
+            // Allow re-delivery if the same peer reconnects later.
+            if (this.activeTextShare?.deliveredToPeers) {
+                this.activeTextShare.deliveredToPeers.delete(conn.peer);
+            }
             this.updatePeerList();
             this.updateStatus(this.connections.size > 0 ? 'connected' : 'ready');
             this.showToast(`${peerInfo?.username || 'Peer'} disconnected`, 'info');
@@ -299,6 +335,39 @@ class VeloApp {
 
             case 'file-end':
                 this.receiveFileEnd(peerId, data);
+                break;
+
+            case 'text-share':
+                if (this.textShareTokenFromUrl && data.token && data.token !== this.textShareTokenFromUrl) {
+                    this.showToast('Text share token mismatch.', 'error');
+                    break;
+                }
+
+                // Defensive guard: handle unexpected payloads.
+                const receivedText = typeof data.text === 'string' ? data.text : '';
+                if (receivedText.length > this.maxTextShareChars) {
+                    this.showToast('Received text is too large to display.', 'error');
+                    break;
+                }
+
+                if (receivedText.trim().length === 0) {
+                    this.showToast('Received empty text.', 'info');
+                }
+
+                // Only show "link delivered" copy when the receiver came from a tokenized URL.
+                this.showReceivedTextModal(receivedText, this.textShareTokenFromUrl ? data.token : null);
+
+                // Clear token after first delivery attempt to avoid repeated modals.
+                if (this.textShareTokenFromUrl && data.token === this.textShareTokenFromUrl) {
+                    this.textShareTokenFromUrl = null;
+                }
+                break;
+
+            case 'text-share-miss':
+                if (this.textShareTokenFromUrl && data.token === this.textShareTokenFromUrl) {
+                    this.textShareTokenFromUrl = null;
+                }
+                this.showToast('Text share not available (sharer offline or token mismatch).', 'error');
                 break;
 
             // Speed Test Protocol
@@ -1078,6 +1147,11 @@ class VeloApp {
     checkUrlParams() {
         const params = new URLSearchParams(window.location.search);
         const joinId = params.get('join');
+        const textShareToken = params.get('t');
+
+        // Token is only meaningful for the text-share link.
+        this.textShareTokenFromUrl = textShareToken || null;
+
         if (joinId) {
             // Fill ID
             if (this.peerIdInput) {
@@ -1139,6 +1213,12 @@ class VeloApp {
         const shareBtn = document.getElementById('shareBtn');
         if (shareBtn) {
             shareBtn.addEventListener('click', () => this.showShareModal());
+        }
+
+        // 7b. Share Text Button
+        const shareTextBtn = document.getElementById('shareTextBtn');
+        if (shareTextBtn) {
+            shareTextBtn.addEventListener('click', () => this.showTextShareModal());
         }
 
         // 8. Queue Control Buttons
@@ -1466,6 +1546,277 @@ class VeloApp {
 
         if (latencyEl) latencyEl.textContent = `${results.latency}ms`;
         if (uploadEl) uploadEl.textContent = this.formatSpeed(results.uploadSpeed);
+    }
+
+    // ==================== SHARE TEXT VIA LINK ====================
+    generateTextShareToken() {
+        if (window.crypto && crypto.getRandomValues) {
+            const bytes = new Uint8Array(16);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Fallback (non-crypto RNG)
+        return Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2);
+    }
+
+    generateTextShareLink(token) {
+        if (!this.myPeerId) {
+            this.showToast('Start hosting first!', 'error');
+            return null;
+        }
+
+        const baseUrl = window.location.origin + window.location.pathname;
+        return `${baseUrl}?join=${encodeURIComponent(this.myPeerId)}&t=${encodeURIComponent(token)}`;
+    }
+
+    async copyTextToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+            // Fallback
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            return false;
+        }
+    }
+
+    async showTextShareModal() {
+        if (!this.myPeerId) {
+            this.showToast('Start hosting first!', 'error');
+            return;
+        }
+
+        const existingModal = document.getElementById('textShareModal');
+        if (existingModal) existingModal.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'textShareModal';
+        modal.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(8px); display: flex; align-items: center; 
+            justify-content: center; z-index: 200;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: var(--bg-surface); border-radius: 24px; padding: 2.5rem; 
+                        max-width: 550px; width: 95%; text-align: center; border: 1px solid var(--border-light);">
+                <h2 style="margin-bottom: 0.25rem;">Share Text</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Paste or type what you want to share.</p>
+
+                <div style="background: var(--bg-main); padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; text-align: left;">
+                    <textarea id="textShareInput"
+                              placeholder="Type or paste text..."
+                              style="width: 100%; min-height: 170px; background: transparent; border: none; 
+                                     color: var(--text-primary); outline: none; font-family: monospace; resize: vertical;"></textarea>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.9rem; gap: 0.75rem;">
+                        <div id="textShareCount" style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">0/${this.maxTextShareChars}</div>
+                        <button id="pasteClipboardBtn" class="btn-ghost" style="padding: 0.45rem 0.75rem; font-size: 0.8rem; white-space: nowrap;">
+                            Paste
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-main); padding: 1rem; border-radius: 12px; margin-bottom: 1.25rem; 
+                            display: flex; align-items: center; gap: 0.6rem;">
+                    <input type="text" value="" readonly id="textShareLinkInput"
+                           style="flex: 1; background: transparent; border: none; color: var(--text-primary); 
+                                  font-size: 0.85rem; outline: none; font-family: monospace;">
+                    <button id="createTextLinkBtn" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Create & Send
+                    </button>
+                    <button id="copyTextShareLinkBtn" class="btn-ghost" style="padding: 0.5rem 0.9rem; font-size: 0.9rem;" disabled>
+                        Copy
+                    </button>
+                </div>
+
+                <div id="textShareQrCode" style="display: flex; justify-content: center; margin-bottom: 1rem; 
+                                              padding: 1rem; background: white; border-radius: 12px; width: fit-content; 
+                                              margin-left: auto; margin-right: auto;"></div>
+
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.2rem; margin-bottom: 1.25rem;">
+                    This text will be delivered instantly to connected peers, and also to anyone who connects afterward.
+                </p>
+
+                <button id="closeTextShareModal" class="btn-ghost" style="width: 100%;">Close</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const textarea = modal.querySelector('#textShareInput');
+        const countEl = modal.querySelector('#textShareCount');
+        const pasteBtn = modal.querySelector('#pasteClipboardBtn');
+        const linkInput = modal.querySelector('#textShareLinkInput');
+        const qrContainer = modal.querySelector('#textShareQrCode');
+        const createBtn = modal.querySelector('#createTextLinkBtn');
+        const copyBtn = modal.querySelector('#copyTextShareLinkBtn');
+        const closeBtn = modal.querySelector('#closeTextShareModal');
+
+        const updateCount = () => {
+            const len = textarea.value.length;
+            countEl.textContent = `${len}/${this.maxTextShareChars}`;
+            countEl.style.color = len > this.maxTextShareChars ? 'var(--danger)' : 'var(--text-muted)';
+        };
+
+        textarea.addEventListener('input', updateCount);
+        updateCount();
+
+        const setLink = (link) => {
+            linkInput.value = link;
+            copyBtn.disabled = !link;
+        };
+
+        const prefillFromClipboard = async () => {
+            if (!navigator.clipboard?.readText) return;
+            try {
+                const clipText = await navigator.clipboard.readText();
+                textarea.value = clipText;
+                updateCount();
+            } catch (err) {
+                // Clipboard read may be blocked; user can paste manually.
+            }
+        };
+
+        pasteBtn.onclick = async () => {
+            if (!navigator.clipboard?.readText) {
+                this.showToast('Clipboard API not supported. Paste manually.', 'error');
+                return;
+            }
+
+            try {
+                const clipText = await navigator.clipboard.readText();
+                textarea.value = clipText;
+                updateCount();
+                if (clipText.trim().length === 0) this.showToast('Clipboard is empty', 'info');
+            } catch (err) {
+                this.showToast('Clipboard paste blocked. Paste manually.', 'error');
+            }
+        };
+
+        createBtn.onclick = async () => {
+            const text = textarea.value;
+            const trimmed = text.trim();
+
+            if (trimmed.length === 0) {
+                this.showToast('Enter text to share', 'error');
+                return;
+            }
+
+            if (text.length > this.maxTextShareChars) {
+                this.showToast(`Text too long (max ${this.maxTextShareChars} chars)`, 'error');
+                return;
+            }
+
+            const token = this.generateTextShareToken();
+            const deliveredToPeers = new Set();
+            this.activeTextShare = { token, text, deliveredToPeers };
+
+            // Send immediately to already-connected peers.
+            const targetConnections = this.getTargetConnections();
+            if (targetConnections.length === 0) {
+                this.showToast('No peers connected yet. Text will be delivered after they connect.', 'info');
+            } else {
+                targetConnections.forEach(({ conn }) => {
+                    conn.send({
+                        type: 'text-share',
+                        token,
+                        text
+                    });
+                    deliveredToPeers.add(conn.peer);
+                });
+                this.showToast('Text shared!', 'success');
+            }
+
+            // Render a QR for joining the session (no token link needed for normal connect).
+            const joinLink = this.generateShareLink();
+            if (joinLink) {
+                setLink(joinLink);
+
+                if (qrContainer) qrContainer.innerHTML = '';
+                if (window.QRCode && qrContainer) {
+                    new QRCode(qrContainer, {
+                        text: joinLink,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }
+            }
+        };
+
+        copyBtn.onclick = async () => {
+            if (!linkInput.value) {
+                this.showToast('Create the link first', 'info');
+                return;
+            }
+            await this.copyTextToClipboard(linkInput.value);
+            this.showToast('Link copied!', 'success');
+        };
+
+        closeBtn.onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+        await prefillFromClipboard();
+    }
+
+    showReceivedTextModal(text, token = null) {
+        const safeText = typeof text === 'string' ? text : String(text ?? '');
+
+        const existingModal = document.getElementById('receivedTextShareModal');
+        if (existingModal) existingModal.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'receivedTextShareModal';
+        modal.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(8px); display: flex; align-items: center; 
+            justify-content: center; z-index: 200;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: var(--bg-surface); border-radius: 24px; padding: 2.5rem; 
+                        max-width: 650px; width: 95%; text-align: center; border: 1px solid var(--border-light);">
+                <h2 style="margin-bottom: 0.25rem;">Received Text</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+                    ${token ? 'Text share link delivered.' : 'Text received.'}
+                </p>
+
+                <pre id="receivedTextPre" style="white-space: pre-wrap; word-break: break-word; 
+                        max-height: 45vh; overflow: auto; background: var(--bg-main); padding: 1rem; 
+                        border-radius: 12px; border: 1px solid var(--border-light); color: var(--text-primary); 
+                        font-family: monospace; text-align: left;"></pre>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button id="copyReceivedTextBtn" class="btn-primary" style="flex: 1; padding: 0.75rem 1rem;">
+                        Copy
+                    </button>
+                    <button id="closeReceivedTextBtn" class="btn-ghost" style="flex: 1; padding: 0.75rem 1rem;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const pre = modal.querySelector('#receivedTextPre');
+        pre.textContent = safeText;
+
+        modal.querySelector('#copyReceivedTextBtn').onclick = async () => {
+            await this.copyTextToClipboard(safeText);
+            this.showToast('Text copied!', 'success');
+        };
+        modal.querySelector('#closeReceivedTextBtn').onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
     }
 
     // ==================== SHARE VIA LINK ====================
