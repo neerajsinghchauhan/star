@@ -1605,14 +1605,15 @@ class VeloApp {
 
         modal.innerHTML = `
             <div style="background: var(--bg-surface); border-radius: 24px; padding: 2.5rem; 
-                        max-width: 550px; width: 95%; text-align: center; border: 1px solid var(--border-light);">
+                        max-width: 550px; width: 95%; text-align: center; border: 1px solid var(--border-light);
+                        max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
                 <h2 style="margin-bottom: 0.25rem;">Share Text</h2>
                 <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Paste or type what you want to share.</p>
 
                 <div style="background: var(--bg-main); padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; text-align: left;">
                     <textarea id="textShareInput"
                               placeholder="Type or paste text..."
-                              style="width: 100%; min-height: 170px; background: transparent; border: none; 
+                              style="width: 100%; min-height: clamp(120px, 22vh, 170px); background: transparent; border: none; 
                                      color: var(--text-primary); outline: none; font-family: monospace; resize: vertical;"></textarea>
 
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.9rem; gap: 0.75rem;">
@@ -1784,7 +1785,8 @@ class VeloApp {
 
         modal.innerHTML = `
             <div style="background: var(--bg-surface); border-radius: 24px; padding: 2.5rem; 
-                        max-width: 650px; width: 95%; text-align: center; border: 1px solid var(--border-light);">
+                        max-width: 650px; width: 95%; text-align: center; border: 1px solid var(--border-light);
+                        max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
                 <h2 style="margin-bottom: 0.25rem;">Received Text</h2>
                 <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
                     ${token ? 'Text share link delivered.' : 'Text received.'}
