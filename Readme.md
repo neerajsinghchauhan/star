@@ -1,1 +1,1 @@
-hello there. I am here. Today, What's in your mind?
+hello there. I am here. 
