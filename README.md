@@ -1,3 +1,10 @@
+![Star Logo](public/icons/app-icon.svg)
+
+# Star 🌟
+[![Vercel Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://star-pi.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Technology: WebRTC](https://img.shields.io/badge/Tech-WebRTC-blue?style=for-the-badge)](https://webrtc.org/)
+
 # Star - Instant P2P File Transfer
 
 **Star** is a peer-to-peer file transfer app that works entirely in the browser. No upload limits, no server storage, just instant streaming between devices.
