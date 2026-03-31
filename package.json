@@ -4,6 +4,7 @@
   "description": "Star - Instant P2P File Transfer. Deploy anywhere.",
   "private": true,
   "scripts": {
+    "build": "echo 'Static Build Successfully Completed'",
     "dev": "npx serve public",
     "start": "npx serve public"
   },
