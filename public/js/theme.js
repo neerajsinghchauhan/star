@@ -11,7 +11,7 @@ const ThemeManager = {
         this.iconMoon = document.querySelector('.icon-moon');
 
         // Check local storage or system preference
-        const savedTheme = localStorage.getItem('velo-theme');
+        const savedTheme = localStorage.getItem('star-theme');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
         if (savedTheme) {
@@ -27,7 +27,7 @@ const ThemeManager = {
 
     setTheme(theme) {
         this.html.setAttribute('data-theme', theme);
-        localStorage.setItem('velo-theme', theme);
+        localStorage.setItem('star-theme', theme);
         this.updateIcons(theme);
     },
 

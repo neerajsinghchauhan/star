@@ -41,9 +41,9 @@ class StarApp {
         this.speedTestInProgress = false;
 
         // Adaptive Chunk Sizing for Speed Improvements
-        this.currentChunkSize = 512 * 1024; // Start at 512KB
-        this.minChunkSize = 256 * 1024; // 256KB minimum
-        this.maxChunkSize = 2 * 1024 * 1024; // 2MB maximum
+        this.currentChunkSize = 64 * 1024; // Start at 64KB
+        this.minChunkSize = 16 * 1024; // 16KB minimum
+        this.maxChunkSize = 256 * 1024; // 256KB maximum (High speed, reliable)
         this.measuredSpeed = 0; // Current measured speed in bytes/sec
 
         // Share Link
@@ -146,7 +146,7 @@ class StarApp {
 
     generatePeerId() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        let id = 'VELO-';
+        let id = 'STAR-';
         for (let i = 0; i < 6; i++) {
             id += chars.charAt(Math.floor(Math.random() * chars.length));
         }
@@ -763,17 +763,15 @@ class StarApp {
     // ==================== ADAPTIVE CHUNK SIZING ====================
 
     calculateOptimalChunkSize() {
-        // Adjust chunk size based on measured speed
+        // Safe WebRTC adaptive chunk size mapping
         if (this.measuredSpeed > 50 * 1024 * 1024) { // > 50 MB/s
-            this.currentChunkSize = this.maxChunkSize; // 2MB
+            this.currentChunkSize = this.maxChunkSize; // 256KB
         } else if (this.measuredSpeed > 20 * 1024 * 1024) { // > 20 MB/s
-            this.currentChunkSize = 1.5 * 1024 * 1024; // 1.5MB
-        } else if (this.measuredSpeed > 10 * 1024 * 1024) { // > 10 MB/s
-            this.currentChunkSize = 1024 * 1024; // 1MB
+            this.currentChunkSize = 128 * 1024; // 128KB
         } else if (this.measuredSpeed > 5 * 1024 * 1024) { // > 5 MB/s
-            this.currentChunkSize = 768 * 1024; // 768KB
+            this.currentChunkSize = 64 * 1024; // 64KB
         } else {
-            this.currentChunkSize = this.minChunkSize; // 256KB for slow connections
+            this.currentChunkSize = this.minChunkSize; // 16KB for slow/stable connections
         }
         return this.currentChunkSize;
     }
@@ -842,19 +840,19 @@ class StarApp {
                 }
             }
 
-            // Backpressure check with optimized threshold (4MB instead of 8MB)
+            // Backpressure check with optimized threshold to prevent infinite stalling
             let totalBuffered = 0;
             for (const { conn } of targetConnections) {
                 if (conn.dataChannel) {
-                    totalBuffered += conn.dataChannel.bufferedAmount || 0;
+                    totalBuffered += (conn.dataChannel.bufferedAmount || 0);
                 }
             }
 
-            // Dynamic backpressure threshold based on connection count
-            const bufferThreshold = Math.max(2, 4 / targetConnections.length) * 1024 * 1024;
+            // Dynamic backpressure threshold safe for browsers (1MB limit to avoid pipe breaking)
+            const bufferThreshold = Math.max(0.5, 1 / targetConnections.length) * 1024 * 1024;
 
             if (totalBuffered > bufferThreshold) {
-                setTimeout(sendNextChunk, 5); // Faster retry (5ms instead of 10ms)
+                setTimeout(sendNextChunk, 10); // Standard retry delay
                 return;
             }
 
