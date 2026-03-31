@@ -1,5 +1,5 @@
 // Star Service Worker - Offline Support
-const CACHE_NAME = 'star-cache-v2';
+const CACHE_NAME = 'star-cache-v4';
 const ASSETS_TO_CACHE = [
     '/',
     '/app.html',
