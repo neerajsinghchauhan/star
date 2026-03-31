@@ -40,10 +40,10 @@ class StarApp {
         this.peerSpeedResults = new Map(); // peerId -> { latency, uploadSpeed, downloadSpeed }
         this.speedTestInProgress = false;
 
-        // Adaptive Chunk Sizing for Speed Improvements
-        this.currentChunkSize = 64 * 1024; // Start at 64KB
-        this.minChunkSize = 16 * 1024; // 16KB minimum
-        this.maxChunkSize = 256 * 1024; // 256KB maximum (High speed, reliable)
+        // Performance-Optimized Adaptive Chunk Sizes for Mobile WebRTC
+        this.currentChunkSize = 512 * 1024; // Start at 512KB
+        this.minChunkSize = 256 * 1024; // Minimum 256KB
+        this.maxChunkSize = 1024 * 1024; // Maximum 1MB slices
         this.measuredSpeed = 0; // Current measured speed in bytes/sec
 
         // Share Link
@@ -763,15 +763,15 @@ class StarApp {
     // ==================== ADAPTIVE CHUNK SIZING ====================
 
     calculateOptimalChunkSize() {
-        // Safe WebRTC adaptive chunk size mapping
+        // WebRTC aggressive speed adaptive chunk sizes
         if (this.measuredSpeed > 50 * 1024 * 1024) { // > 50 MB/s
-            this.currentChunkSize = this.maxChunkSize; // 256KB
+            this.currentChunkSize = this.maxChunkSize; // 1MB
         } else if (this.measuredSpeed > 20 * 1024 * 1024) { // > 20 MB/s
-            this.currentChunkSize = 128 * 1024; // 128KB
+            this.currentChunkSize = 768 * 1024; // 768KB
         } else if (this.measuredSpeed > 5 * 1024 * 1024) { // > 5 MB/s
-            this.currentChunkSize = 64 * 1024; // 64KB
+            this.currentChunkSize = 512 * 1024; // 512KB
         } else {
-            this.currentChunkSize = this.minChunkSize; // 16KB for slow/stable connections
+            this.currentChunkSize = this.minChunkSize; // 256KB
         }
         return this.currentChunkSize;
     }
@@ -848,11 +848,11 @@ class StarApp {
                 }
             }
 
-            // Dynamic backpressure threshold safe for browsers (1MB limit to avoid pipe breaking)
-            const bufferThreshold = Math.max(0.5, 1 / targetConnections.length) * 1024 * 1024;
+            // Mobile-Optimized dynamic backpressure limit (16MB allowance per massive bandwidth scaling)
+            const bufferThreshold = Math.max(8, 16 / targetConnections.length) * 1024 * 1024;
 
             if (totalBuffered > bufferThreshold) {
-                setTimeout(sendNextChunk, 10); // Standard retry delay
+                setTimeout(sendNextChunk, 2); // Micro-polling to prevent CPU stalling
                 return;
             }
 
