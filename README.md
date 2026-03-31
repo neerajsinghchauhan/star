@@ -1,6 +1,6 @@
-# Velo - Instant P2P File Transfer
+# Star - Instant P2P File Transfer
 
-**Velo** is a peer-to-peer file transfer app that works entirely in the browser. No upload limits, no server storage, just instant streaming between devices.
+**Star** is a peer-to-peer file transfer app that works entirely in the browser. No upload limits, no server storage, just instant streaming between devices.
 
 ## 🚀 Features
 
@@ -30,7 +30,7 @@
    - **Publish Directory**: `public`
 4. Deploy!
 
-### Local Development
+### Local Destarpment
 
 ```bash
 npm install
@@ -41,7 +41,7 @@ Then open http://localhost:3000
 
 ## 🔧 How It Works
 
-Velo uses [PeerJS](https://peerjs.com/) for WebRTC signaling. When you host:
+Star uses [PeerJS](https://peerjs.com/) for WebRTC signaling. When you host:
 
 1. You get a unique Peer ID (e.g., `VELO-ABC123`)
 2. Share this ID with the person you want to connect
@@ -52,7 +52,7 @@ Velo uses [PeerJS](https://peerjs.com/) for WebRTC signaling. When you host:
 
 ```
 Structure:
-└── prathamtagad-velo-share/
+└── neerajsinghchauhan-star-share/
     ├── README.md
     ├── package.json
     ├── server.js

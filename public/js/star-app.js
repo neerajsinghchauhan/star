@@ -1,10 +1,10 @@
 /**
- * Velo - P2P File Transfer (PeerJS Edition)
+ * Star - P2P File Transfer (PeerJS Edition)
  * Static deployment compatible - No server required!
  * Enhanced with live speed & ETA tracking
  */
 
-class VeloApp {
+class StarApp {
     constructor() {
         this.peer = null;
         this.connections = new Map(); // peerId -> { conn, username }
@@ -1169,11 +1169,11 @@ class VeloApp {
     }
 
     saveProfile() {
-        localStorage.setItem('velo_username', this.myUsername);
+        localStorage.setItem('star_username', this.myUsername);
     }
 
     loadProfile() {
-        const savedName = localStorage.getItem('velo_username');
+        const savedName = localStorage.getItem('star_username');
         if (savedName) {
             if (this.hostNameInput) this.hostNameInput.value = savedName;
             if (this.joinNameInput) this.joinNameInput.value = savedName;
@@ -1295,7 +1295,7 @@ class VeloApp {
         // Generate QR
         if (window.QRCode) {
             new QRCode(container, {
-                text: `https://velo-share.netlify.app/app.html?join=${this.myPeerId || ''}`,
+                text: `https://star-share.netlify.app/app.html?join=${this.myPeerId || ''}`,
                 width: 200,
                 height: 200,
                 colorDark: "#000000",
@@ -1321,15 +1321,15 @@ class VeloApp {
             peer: transfer.peer
         };
 
-        let history = JSON.parse(localStorage.getItem('velo_history') || '[]');
+        let history = JSON.parse(localStorage.getItem('star_history') || '[]');
         history.unshift(historyItem);
         if (history.length > 50) history.pop(); // Keep last 50
-        localStorage.setItem('velo_history', JSON.stringify(history));
+        localStorage.setItem('star_history', JSON.stringify(history));
     }
 
     loadHistory() {
         // Could implement a history view UI here later
-        console.log('History loaded', JSON.parse(localStorage.getItem('velo_history') || '[]'));
+        console.log('History loaded', JSON.parse(localStorage.getItem('star_history') || '[]'));
     }
 
     triggerConfetti() {
@@ -1860,8 +1860,8 @@ class VeloApp {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'Join my Velo session',
-                    text: `Connect with me on Velo for instant file transfer!`,
+                    title: 'Join my Star session',
+                    text: `Connect with me on Star for instant file transfer!`,
                     url: link
                 });
                 this.showToast('Shared successfully!', 'success');
@@ -1936,10 +1936,10 @@ class VeloApp {
 
         // Social share buttons
         document.getElementById('whatsappShare').onclick = () => {
-            window.open(`https://wa.me/?text=${encodeURIComponent('Join my Velo session: ' + link)}`, '_blank');
+            window.open(`https://wa.me/?text=${encodeURIComponent('Join my Star session: ' + link)}`, '_blank');
         };
         document.getElementById('telegramShare').onclick = () => {
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Join my Velo session!')}`, '_blank');
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Join my Star session!')}`, '_blank');
         };
 
         if (navigator.share) {
@@ -1962,6 +1962,6 @@ class VeloApp {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    window.velo = new VeloApp();
-    window.velo.initNewFeatures();
+    window.star = new StarApp();
+    window.star.initNewFeatures();
 });

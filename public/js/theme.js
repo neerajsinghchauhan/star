@@ -1,5 +1,5 @@
 /**
- * Velo Theme Manager
+ * Star Theme Manager
  * Handles Light/Dark mode transitions
  */
 

@@ -6,63 +6,66 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
 
 :root {
-    /* THEME: LIGHT (Default/Air)
-       Psychology: Fresh, Open, Professional, New Beginnings!
+    /* THEME: LIGHT (3D/Cool)
+       Psychology: vibrant, dimensional, energetic
     */
-    --bg-main: #F3F4F6;
-    --bg-surface: #ffffff;
-    --bg-glass: rgba(255, 255, 255, 0.7);
-    --bg-glass-strong: rgba(255, 255, 255, 0.9);
+    --bg-main: #e2e8f0;
+    --bg-surface: #f8fafc;
+    --bg-glass: rgba(255, 255, 255, 0.65);
+    --bg-glass-strong: rgba(255, 255, 255, 0.95);
 
-    --text-primary: #111827;
-    --text-secondary: #4B5563;
-    --text-muted: #9CA3AF;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
 
-    --border-light: rgba(0, 0, 0, 0.05);
-    --border-hover: rgba(124, 58, 237, 0.3);
+    --border-light: rgba(255, 255, 255, 0.6);
+    --border-hover: rgba(56, 189, 248, 0.6);
 
-    --primary: #7C3AED;
-    /* Electric Violet */
-    --primary-glow: rgba(124, 58, 237, 0.2);
-    --accent: #34D399;
-    /* Neon Mint */
-    --accent-glow: rgba(52, 211, 153, 0.2);
-    --danger: #EF4444;
+    --primary: #2563eb;
+    /* Electric Royal Blue */
+    --primary-glow: rgba(37, 99, 235, 0.3);
+    --accent: #ec4899;
+    /* Neon Pink */
+    --accent-glow: rgba(236, 72, 153, 0.3);
+    --danger: #ef4444;
 
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
-    --shadow-md: 0 8px 16px rgba(124, 58, 237, 0.06);
-    --shadow-lg: 0 12px 32px rgba(124, 58, 237, 0.12);
+    /* 3D Shadows for Light Mode */
+    --shadow-sm: 4px 4px 10px rgba(163, 177, 198, 0.5), -4px -4px 10px rgba(255, 255, 255, 0.8);
+    --shadow-md: 8px 8px 20px rgba(163, 177, 198, 0.6), -8px -8px 20px rgba(255, 255, 255, 0.9);
+    --shadow-lg: 12px 12px 30px rgba(163, 177, 198, 0.7), -12px -12px 30px rgba(255, 255, 255, 1);
 
     --font-body: 'Outfit', sans-serif;
     --font-heading: 'Space Grotesk', sans-serif;
 }
 
 [data-theme="dark"] {
-    /* THEME: DARK (Void/Night)
-       Psychology: Infinite, Immersive, Tech-Forward, Relaxing
+    /* THEME: DARK (Deep Space / 3D Cyber)
+       Psychology: immersive, neon, futuristic
     */
-    --bg-main: #05050A;
-    --bg-surface: #0E0E16;
-    --bg-glass: rgba(14, 14, 22, 0.7);
-    --bg-glass-strong: rgba(14, 14, 22, 0.9);
+    --bg-main: #0b0f19;
+    --bg-surface: #111827;
+    --bg-glass: rgba(17, 24, 39, 0.7);
+    --bg-glass-strong: rgba(17, 24, 39, 0.95);
 
-    --text-primary: #ffffff;
-    --text-secondary: #9CA3AF;
-    --text-muted: #4B5563;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
 
-    --border-light: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(124, 58, 237, 0.5);
+    --border-light: rgba(255, 255, 255, 0.05);
+    --border-hover: rgba(56, 189, 248, 0.5);
 
-    --primary: #8B5CF6;
-    /* Lighter Violet for Dark Mode */
-    --primary-glow: rgba(139, 92, 246, 0.3);
-    --accent: #10B981;
-    --accent-glow: rgba(16, 185, 129, 0.2);
-    --danger: #F87171;
+    --primary: #38bdf8;
+    /* Cyber Cyan */
+    --primary-glow: rgba(56, 189, 248, 0.4);
+    --accent: #f43f5e;
+    /* Neon Red/Pink */
+    --accent-glow: rgba(244, 63, 94, 0.3);
+    --danger: #f87171;
 
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 12px 40px rgba(139, 92, 246, 0.15);
+    /* 3D Shadows for Dark Mode */
+    --shadow-sm: inset 0px 1px 1px rgba(255,255,255,0.05), 0px 4px 10px rgba(0, 0, 0, 0.5);
+    --shadow-md: inset 0px 1px 2px rgba(255,255,255,0.08), 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1);
+    --shadow-lg: inset 0px 2px 3px rgba(255,255,255,0.1), 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 40px rgba(244, 63, 94, 0.15);
 }
 
 /* ==================== CORE RESET & TYPOGRAPHY ==================== */
@@ -787,7 +790,7 @@ footer {
     gap: 2rem;
 }
 
-.velo-portal {
+.star-portal {
     width: 300px;
     height: 300px;
     border-radius: 50%;
@@ -803,7 +806,7 @@ footer {
     z-index: 10;
 }
 
-.velo-portal::before {
+.star-portal::before {
     content: '';
     position: absolute;
     inset: -10px;
@@ -814,13 +817,13 @@ footer {
     animation: rotateBin 4s linear infinite;
 }
 
-.velo-portal:hover {
+.star-portal:hover {
     transform: scale(1.05);
     border-color: transparent;
     box-shadow: 0 0 60px var(--primary-glow);
 }
 
-.velo-portal:hover::before {
+.star-portal:hover::before {
     opacity: 0.5;
 }
 
@@ -831,7 +834,7 @@ footer {
     transition: color 0.3s ease;
 }
 
-.velo-portal:hover .portal-icon {
+.star-portal:hover .portal-icon {
     color: var(--primary);
 }
 
@@ -985,7 +988,7 @@ footer {
         padding: 4rem 0;
     }
 
-    .velo-portal {
+    .star-portal {
         width: 250px;
         height: 250px;
     }

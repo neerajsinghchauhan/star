@@ -1,5 +1,5 @@
-// Velo Service Worker - Offline Support
-const CACHE_NAME = 'velo-cache-v1';
+// Star Service Worker - Offline Support
+const CACHE_NAME = 'star-cache-v1';
 const ASSETS_TO_CACHE = [
     '/',
     '/app.html',

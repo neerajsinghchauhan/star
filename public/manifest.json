@@ -1,6 +1,6 @@
 {
-    "name": "Velo",
-    "short_name": "Velo",
+    "name": "Star",
+    "short_name": "Star",
     "description": "Instant P2P File Transfer - No upload, no waiting",
     "start_url": "/app.html",
     "display": "standalone",
