@@ -1,13 +1,15 @@
 // Star Service Worker - Offline Support
-const CACHE_NAME = 'star-cache-v1';
+const CACHE_NAME = 'star-cache-v2';
 const ASSETS_TO_CACHE = [
     '/',
     '/app.html',
     '/index.html',
     '/css/style.css',
     '/js/theme.js',
-    '/js/velo-app.js',
-    '/manifest.json'
+    '/js/star-app.js',
+    '/manifest.json',
+    '/icons/favicon.svg',
+    '/icons/app-icon.svg'
 ];
 
 // Install

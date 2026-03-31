@@ -57,4 +57,13 @@ const ThemeManager = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => ThemeManager.init());
+document.addEventListener('DOMContentLoaded', () => {
+    ThemeManager.init();
+    
+    // Register Service Worker for PWA installability everywhere
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW registration failed:', err));
+        });
+    }
+});

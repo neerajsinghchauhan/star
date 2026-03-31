@@ -1,15 +1,165 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Velo icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8B5CF6" />
-      <stop offset="100%" stop-color="#34D399" />
+    <!-- Deep space background gradient -->
+    <radialGradient id="bg-radial" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#1E0A4E"/>
+      <stop offset="50%" stop-color="#0D0520"/>
+      <stop offset="100%" stop-color="#050210"/>
+    </radialGradient>
+
+    <!-- Main star gradient - purple to cyan -->
+    <linearGradient id="star-main" x1="10%" y1="5%" x2="90%" y2="95%">
+      <stop offset="0%" stop-color="#67E8F9"/>
+      <stop offset="35%" stop-color="#A78BFA"/>
+      <stop offset="70%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(0,0,0,0.35)" />
+
+    <!-- Inner star highlight -->
+    <linearGradient id="star-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0ABFC"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+
+    <!-- Ring gradient -->
+    <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#67E8F9" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#A78BFA" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- Outer glow filter -->
+    <filter id="outer-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="20" result="blur1"/>
+      <feFlood flood-color="#8B5CF6" flood-opacity="0.5" result="color1"/>
+      <feComposite in="color1" in2="blur1" operator="in" result="glow1"/>
+      <feMerge>
+        <feMergeNode in="glow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+
+    <!-- Soft star glow -->
+    <filter id="star-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Particle glow -->
+    <filter id="particle-glow" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Clip for rounded square -->
+    <clipPath id="rounded-clip">
+      <rect width="512" height="512" rx="110"/>
+    </clipPath>
   </defs>
-  <rect x="24" y="24" width="208" height="208" rx="48" fill="#0E0E16" />
-  <rect x="24" y="24" width="208" height="208" rx="48" fill="url(#g)" opacity="0.12" />
-  <path d="M140 36 56 150h72l-12 70 84-114h-72z" fill="#fff" filter="url(#shadow)"/>
-  <path d="M140 36 56 150h72l-12 70 84-114h-72z" fill="url(#g)" />
+
+  <!-- Clip everything to rounded square -->
+  <g clip-path="url(#rounded-clip)">
+    <!-- Background -->
+    <rect width="512" height="512" fill="url(#bg-radial)"/>
+
+    <!-- Subtle nebula glow in top-left -->
+    <ellipse cx="120" cy="130" rx="180" ry="140" fill="#3B0764" opacity="0.25"/>
+
+    <!-- Subtle nebula glow in bottom-right -->
+    <ellipse cx="400" cy="390" rx="160" ry="120" fill="#0E7490" opacity="0.12"/>
+
+    <!-- Outer orbital ring - ellipse -->
+    <ellipse
+      cx="256" cy="256"
+      rx="195" ry="75"
+      fill="none"
+      stroke="url(#ring-grad)"
+      stroke-width="1.5"
+      opacity="0.7"
+      transform="rotate(-30 256 256)"
+    />
+
+    <!-- Second orbital ring -->
+    <ellipse
+      cx="256" cy="256"
+      rx="155" ry="60"
+      fill="none"
+      stroke="#A78BFA"
+      stroke-width="0.8"
+      stroke-dasharray="8 12"
+      opacity="0.35"
+      transform="rotate(15 256 256)"
+    />
+
+    <!-- Ambient glow blob underneath star -->
+    <ellipse cx="256" cy="256" rx="110" ry="110" fill="#7C3AED" opacity="0.18" filter="url(#outer-glow)"/>
+
+    <!-- === MAIN 4-POINTED STAR === -->
+    <!-- The star shape is two overlapping diamonds making a 4-point, rendered with smooth bezier curves -->
+    <path
+      d="M256 80
+         C256 80  268 155  294 181
+         C320 207  396 216  432 256
+         C396 256  320 296  294 331
+         C268 355  256 432  256 432
+         C256 432  244 355  218 331
+         C192 306  116 296  80 256
+         C116 256  192 207  218 181
+         C244 155  256 80  256 80Z"
+      fill="url(#star-main)"
+      filter="url(#star-glow)"
+    />
+
+    <!-- Inner smaller star highlight layer -->
+    <path
+      d="M256 148
+         C256 148  263 196  279 213
+         C297 230  344 237  370 256
+         C344 256  297 275  279 299
+         C263 313  256 364  256 364
+         C256 364  249 313  233 299
+         C215 275  168 256  142 256
+         C168 256  215 230  233 213
+         C249 196  256 148  256 148Z"
+      fill="url(#star-inner)"
+      opacity="0.6"
+    />
+
+    <!-- Center bright core -->
+    <circle cx="256" cy="256" r="22" fill="#F5F3FF" opacity="0.95"/>
+    <circle cx="256" cy="256" r="10" fill="white"/>
+
+    <!-- Small sparkle dots on the four star tips -->
+    <!-- Top tip -->
+    <circle cx="256" cy="88" r="5" fill="#67E8F9" filter="url(#particle-glow)" opacity="0.9"/>
+    <!-- Bottom tip -->
+    <circle cx="256" cy="424" r="5" fill="#67E8F9" filter="url(#particle-glow)" opacity="0.9"/>
+    <!-- Left tip -->
+    <circle cx="88" cy="256" r="5" fill="#C084FC" filter="url(#particle-glow)" opacity="0.9"/>
+    <!-- Right tip -->
+    <circle cx="424" cy="256" r="5" fill="#C084FC" filter="url(#particle-glow)" opacity="0.9"/>
+
+    <!-- Scattered small stars / particles -->
+    <circle cx="108" cy="108" r="2.5" fill="#E9D5FF" opacity="0.7"/>
+    <circle cx="400" cy="115" r="2" fill="#BAE6FD" opacity="0.6"/>
+    <circle cx="140" cy="380" r="2" fill="#E9D5FF" opacity="0.5"/>
+    <circle cx="390" cy="370" r="3" fill="#C084FC" opacity="0.6"/>
+    <circle cx="72" cy="200" r="1.8" fill="white" opacity="0.5"/>
+    <circle cx="450" cy="310" r="1.8" fill="white" opacity="0.45"/>
+    <circle cx="320" cy="75" r="1.5" fill="#A5F3FC" opacity="0.6"/>
+    <circle cx="190" cy="445" r="2" fill="#DDD6FE" opacity="0.5"/>
+    <circle cx="460" cy="170" r="1.5" fill="#F0ABFC" opacity="0.5"/>
+    <circle cx="55" cy="330" r="1.5" fill="#A5F3FC" opacity="0.4"/>
+    <circle cx="175" cy="90" r="1.2" fill="white" opacity="0.4"/>
+    <circle cx="430" cy="430" r="2" fill="#DDD6FE" opacity="0.4"/>
+
+    <!-- Very subtle edge vignette -->
+    <rect width="512" height="512" rx="110" fill="none" stroke="#7C3AED" stroke-width="3" opacity="0.3"/>
+  </g>
 </svg>

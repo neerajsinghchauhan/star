@@ -1,12 +1,14 @@
 {
-    "name": "Star",
+    "name": "Star — Instant P2P File Transfer",
     "short_name": "Star",
-    "description": "Instant P2P File Transfer - No upload, no waiting",
+    "description": "Transfer files instantly between devices. No upload, no server, no waiting. Pure peer-to-peer speed.",
     "start_url": "/app.html",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#05050A",
     "theme_color": "#7C3AED",
     "orientation": "any",
+    "categories": ["utilities", "productivity"],
     "icons": [
         {
             "src": "icons/app-icon.svg",
@@ -19,6 +21,22 @@
             "sizes": "512x512",
             "type": "image/svg+xml",
             "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Host a Room",
+            "short_name": "Host",
+            "description": "Start a new file transfer session",
+            "url": "/app.html",
+            "icons": [{ "src": "icons/app-icon.svg", "sizes": "192x192" }]
+        },
+        {
+            "name": "Join a Room",
+            "short_name": "Join",
+            "description": "Connect to an existing session",
+            "url": "/app.html",
+            "icons": [{ "src": "icons/app-icon.svg", "sizes": "192x192" }]
         }
     ]
 }

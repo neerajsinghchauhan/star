@@ -43,7 +43,7 @@ Then open http://localhost:3000
 
 Star uses [PeerJS](https://peerjs.com/) for WebRTC signaling. When you host:
 
-1. You get a unique Peer ID (e.g., `VELO-ABC123`)
+1. You get a unique Peer ID (e.g., `STAR-ABC123`)
 2. Share this ID with the person you want to connect
 3. They enter your ID to establish a direct connection
 4. Files transfer directly between browsers
