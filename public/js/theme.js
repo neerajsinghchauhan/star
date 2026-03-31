@@ -78,43 +78,63 @@ const PwaManager = {
     },
 
     showInstallButton(deferredPrompt) {
-        if (document.getElementById('pwaInstallBtn')) return;
+        if (document.querySelector('.pwa-install-btn')) return; // Already injected
 
-        const navActions = document.querySelector('.navbar > div');
-        if (!navActions) return;
+        // Find potential injection points across different pages
+        const targets = [
+            { container: document.querySelector('.navbar > div'), mode: 'prepend' },
+            { container: document.querySelector('.landing-header'), mode: 'append', wrap: true },
+            { container: document.querySelector('.header-actions'), mode: 'prepend' }
+        ];
 
-        const btn = document.createElement('button');
-        btn.id = 'pwaInstallBtn';
-        btn.className = 'btn-ghost';
-        btn.innerHTML = `
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span style="margin-left: 0.5rem; font-weight: 600;">Install App</span>
-        `;
-        
-        // Highlight it beautifully
-        btn.style.borderColor = 'var(--accent)';
-        btn.style.color = 'var(--accent)';
-        btn.style.background = 'var(--accent-glow)';
+        targets.forEach(target => {
+            if (!target.container) return;
 
-        btn.addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') this.hideInstallButton();
-            deferredPrompt = null;
+            const btn = document.createElement('button');
+            btn.className = 'btn-ghost pwa-install-btn';
+            btn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span style="margin-left: 0.4rem; font-weight: 600;">Install App</span>
+            `;
+            
+            // Highlight styling
+            btn.style.borderColor = 'var(--accent)';
+            btn.style.color = 'var(--accent)';
+            btn.style.background = 'var(--accent-glow)';
+
+            btn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') this.hideInstallButton();
+                deferredPrompt = null;
+            });
+
+            // If it's going into the landing header, wrap it nicely
+            if (target.wrap) {
+                const wrapper = document.createElement('div');
+                wrapper.style.marginTop = '1.5rem';
+                wrapper.className = 'pwa-install-btn';
+                btn.classList.replace('btn-ghost', 'btn-primary'); // Make it stand out more
+                btn.style.margin = '0 auto';
+                wrapper.appendChild(btn);
+                target.container.appendChild(wrapper);
+            } else {
+                if (target.mode === 'prepend' && target.container.firstChild) {
+                    target.container.insertBefore(btn, target.container.firstChild);
+                } else {
+                    target.container.appendChild(btn);
+                }
+            }
         });
-
-        // Insert at the beginning of the button row
-        navActions.insertBefore(btn, navActions.firstChild);
     },
 
     hideInstallButton() {
-        const btn = document.getElementById('pwaInstallBtn');
-        if (btn) btn.remove();
+        document.querySelectorAll('.pwa-install-btn').forEach(btn => btn.remove());
     }
 };
 
